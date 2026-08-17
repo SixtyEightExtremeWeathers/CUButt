@@ -1,10 +1,5 @@
 using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Threading;
 using System.Threading.Tasks;
-using BepInEx.Logging;
-using Buttplug;
 using UnityEngine;
 using System.Linq;
 using Buttplug.Client;
@@ -53,6 +48,8 @@ namespace CUButt
 
             Triggers.Earthquake.Add();
             Triggers.Landing.Add();
+            Triggers.Body.Add();
+            Triggers.Electricity.Add();
 
             return _tempSpeed;
         }
