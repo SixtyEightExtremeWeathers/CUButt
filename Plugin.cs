@@ -24,12 +24,13 @@ namespace CUButt
 
         private Harmony _harmony;
 
-        private void Awake()
+        private async void Awake()
         {
             Log = Logger;
             gameObject.hideFlags = HideFlags.HideAndDontSave;
 
-            VibrationManager.Initialize();
+            LoadConfig();
+            await VibrationManager.Initialize();
 
             _harmony = new Harmony(PluginGuid);
             _harmony.PatchAll(typeof(Plugin).Assembly);

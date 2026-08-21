@@ -2,14 +2,14 @@
 <Weavers xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="FodyWeavers.xsd">
   <Costura>
     <ExcludeAssemblies>
-            UnityEngine.Physics2DModule
-            Unity.TextMeshPro
-            UnityEngine.UI
-            UnityEngine.CoreModule
-            UnityEngine
-            Assembly-CSharp
-            0Harmony
-            BepInEx
-        </ExcludeAssemblies>
+        UnityEngine.Physics2DModule
+        Unity.TextMeshPro
+        UnityEngine.UI
+        UnityEngine.CoreModule
+        UnityEngine
+        Assembly-CSharp
+        0Harmony
+        BepInEx
+    </ExcludeAssemblies>
   </Costura>
 </Weavers>
