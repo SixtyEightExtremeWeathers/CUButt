@@ -27,12 +27,12 @@ namespace CUButt
     }
 
 
-    public class VibrationGenerator
+    static public class PatternGenerator
     {
         private const float Step = 0.1f;
 
 
-        public List<float> CreateImpulse(List<VibrationCheckPoint> points)
+        static public List<float> CreateImpulse(List<VibrationCheckPoint> points)
         {
             List<float> sequence = new List<float>();
 
@@ -59,7 +59,7 @@ namespace CUButt
         }
 
 
-        private float Evaluate(List<VibrationCheckPoint> points, float time)
+        static private float Evaluate(List<VibrationCheckPoint> points, float time)
         {
             VibrationCheckPoint a = points[0];
             VibrationCheckPoint b = points[^1];
@@ -85,7 +85,7 @@ namespace CUButt
         }
 
 
-        private float ApplyInterpolation(float t, InterpolationType type)
+        static private float ApplyInterpolation(float t, InterpolationType type)
         {
             switch (type)
             {
@@ -111,7 +111,7 @@ namespace CUButt
         }
 
 
-        private float Lerp(float a, float b, float t)
+        static private float Lerp(float a, float b, float t)
         {
             return a + (b - a) * t;
         }

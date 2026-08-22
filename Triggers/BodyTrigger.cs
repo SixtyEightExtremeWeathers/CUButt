@@ -1,10 +1,4 @@
-using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Threading;
-using System.Threading.Tasks;
-using BepInEx.Logging;
-using Buttplug;
 using UnityEngine;
 using HarmonyLib;
 
@@ -13,84 +7,72 @@ namespace CUButt.Triggers
     [HarmonyPatch(typeof(global::Body), "HandleBody")]
     internal static class Body
     {
-        private static float PainSpikeThreshold => Plugin.PainSpikeThreashold.Value;
-        private static float PainSpikeDuration => Plugin.PainSpikeDuration.Value;
         private static float PainMultiplier => 0.60f * Plugin.PainMultiplier.Value;
 
 
-        private static bool _wasAlive;
-        private static bool _wasConscious;
         private static float _lastPain;
-        private static float _painWindowBaseline;
-        private static float _painWindowStartedAt;
-
-        private static float _painLevel;
-        private static float _bleedingLevel;
-        private static float _radiationLevel;
-        private static bool _cardiacProblem;
-        private static bool _criticalState;
-
         public static float _happiness;
         public static float _opiate;
 
-        private static float _painSpikeUntil;
-        private static float _painSpikeStrength;
-        private static float _unconsciousStartedAt = float.NegativeInfinity;
-        private static float _deathStartedAt = float.NegativeInfinity;
-        private static bool _deathLatched;
 
         private static void Postfix(global::Body __instance)
         {
-            bool alive = __instance.alive;
-            bool conscious = __instance.conscious;
-
+            bool Alive = __instance.alive;
+            float Pain = Mathf.Clamp(__instance.averagePain, 0.0f, 100.0f);
+            float BleedingLevel = CalculateBleedingLevel(__instance);
+            float RadiationLevel = CalculateRadiationLevel(__instance);
             _happiness = __instance.happiness;
             _opiate = __instance.opiateHappiness;
+            float PainDelta = Pain - _lastPain;
+            float PainSpikeMultiplier = 1f;
 
-            float pain = Mathf.Clamp(__instance.averagePain, 0.0f, 100.0f);
-            if (Timer.Time - _painWindowStartedAt > 0.35f || pain < _painWindowBaseline)
+
+            if (!Alive)
             {
-                _painWindowBaseline = pain;
-                _painWindowStartedAt = Timer.Time;
+                VibrationManager.SetSpeed(0.0f, 100);
             }
 
-            float painDelta = pain - _painWindowBaseline;
-            if (alive && painDelta >= PainSpikeThreshold)
+            if (__instance.isCriticallyDying)
             {
-                float severity = Mathf.InverseLerp(PainSpikeThreshold, 60.0f, painDelta);
-                _painSpikeStrength = Mathf.Max(_painSpikeStrength, Mathf.Lerp(0.45f, 0.85f, severity));
-                _painSpikeUntil = Mathf.Max(_painSpikeUntil, Timer.Time + PainSpikeDuration);
-                _painWindowBaseline = pain;
-                _painWindowStartedAt = Timer.Time;
+                VibrationManager.SetSpeed(VibrationManager.SharpPulse(Timer.Time, 3.4f), 1);
             }
 
-            if (_wasConscious && !conscious && alive)
+            VibrationManager.SetSpeed(Mathf.Clamp01((Pain-0.5f*Timer.TimeSincePain)/100f) * PainMultiplier * PainSpikeMultiplier);
+
+            if (BleedingLevel > 0.0f)
             {
-                _unconsciousStartedAt = Timer.Time;
+                float bleedPulse = VibrationManager.SmoothPulse(Timer.Time, 1f);
+                float bleedAmplitude = Mathf.Lerp(0.08f, 0.40f, BleedingLevel);
+                VibrationManager.SetSpeed(bleedPulse * bleedAmplitude);
             }
 
-            if (_wasAlive && !alive)
+            if (__instance.fibrillationProgress > 1.0f || __instance.fibrillationForced || __instance.inCardiacArrest)
             {
-                _deathStartedAt = Timer.Time;
-                _deathLatched = true;
-            }
-            else if (alive && !_wasAlive)
-            {
-                _deathLatched = false;
-                _deathStartedAt = float.NegativeInfinity;
+                VibrationManager.SetSpeed(VibrationManager.SharpPulse(Timer.Time, 3.4f) * 0.72f);
             }
 
-            _painLevel = pain / 100.0f;
-            _bleedingLevel = CalculateBleedingLevel(__instance);
-            _radiationLevel = CalculateRadiationLevel(__instance);
-            _cardiacProblem = __instance.fibrillationProgress > 1.0f || __instance.fibrillationForced || __instance.inCardiacArrest;
-            _criticalState = __instance.isCriticallyDying;
+            if (RadiationLevel > 0.1f)
+            {
+                float radiation = Mathf.Lerp(0.58f, 1.0f, Timer.Value);
+                radiation *= Mathf.Lerp(0.70f, 1.0f, RadiationLevel);
+                VibrationManager.SetSpeed(radiation);
+            }
 
-            _lastPain = pain;
-            _wasAlive = alive;
-            _wasConscious = conscious;
 
-            Add();
+            if (PainDelta >= 5f)
+            {
+                Timer.ResetPainTimer();
+                List<float> painSpikePattern = PatternGenerator.CreateImpulse(new List<VibrationCheckPoint>
+                {
+                    new VibrationCheckPoint(0.0f, 0.0f, InterpolationType.Linear),
+                    new VibrationCheckPoint(0.2f, Pain*1.5f/100f, InterpolationType.Linear),
+                    new VibrationCheckPoint(0.4f, Pain*1.5f/100f, InterpolationType.Smooth),
+                    new VibrationCheckPoint(0.7f, Pain*0.8f/100f, InterpolationType.Linear)
+                });
+                VibrationManager.AddSpeedSequence(painSpikePattern);
+            }
+
+            _lastPain = Pain;
         }
 
 
@@ -130,62 +112,6 @@ namespace CUButt.Triggers
             }
 
             return Mathf.Max(exposure, Mathf.Clamp01(body.radiationSickness / 100.0f));
-        }
-
-        public static bool IsDead()
-        {
-            return _deathLatched;
-        }
-
-        public static void Add()
-        {
-            float unconsciousElapsed = Timer.Time - _unconsciousStartedAt;
-            float unconsciousImpulse = 0.0f;
-            if (unconsciousElapsed >= 0.0f && unconsciousElapsed < 1.0f)
-            {
-                float envelope = 1.0f - unconsciousElapsed;
-                unconsciousImpulse = envelope * envelope;
-            }
-
-            if (_criticalState)
-            {
-                VibrationManager.SetSpeed(VibrationManager.SharpPulse(Timer.Time, 3.4f));
-                VibrationManager.SetSpeed(unconsciousImpulse);
-            }
-
-            VibrationManager.SetSpeed(Mathf.Clamp01(_painLevel) * PainMultiplier);
-
-            if (_bleedingLevel > 0.0f)
-            {
-                float bleedPulse = VibrationManager.SmoothPulse(Timer.Time, 1f);
-                float bleedAmplitude = Mathf.Lerp(0.08f, 0.40f, _bleedingLevel);
-                VibrationManager.SetSpeed(bleedPulse * bleedAmplitude);
-            }
-
-            if (_cardiacProblem)
-            {
-                VibrationManager.SetSpeed(VibrationManager.SharpPulse(Timer.Time, 3.4f) * 0.72f);
-            }
-
-            if (_radiationLevel > 0.001f)
-            {
-                float radiation = Mathf.Lerp(0.58f, 1.0f, Timer.Value);
-                radiation *= Mathf.Lerp(0.70f, 1.0f, _radiationLevel);
-                VibrationManager.SetSpeed(radiation);
-            }
-
-
-            if (Timer.Time < _painSpikeUntil)
-            {
-                float remaining = _painSpikeUntil - Timer.Time;
-                float fade = remaining < 0.15f ? remaining / 0.15f : 1.0f;
-                VibrationManager.SetSpeed(_painSpikeStrength * Mathf.Clamp01(fade));
-            }
-            else
-            {
-                _painSpikeStrength = 0.0f;
-            }
-
         }
     }
 }

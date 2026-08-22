@@ -18,8 +18,6 @@ namespace CUButt
         internal static ConfigEntry<float> GlobalMultiplier;
         internal static ConfigEntry<float> UpdateRate;
         internal static ConfigEntry<bool> WSMode;
-        internal static ConfigEntry<float> PainSpikeThreashold; //5f
-        internal static ConfigEntry<float> PainSpikeDuration; //0.8f
         internal static ConfigEntry<float> PainMultiplier; //1f
 
         private Harmony _harmony;
@@ -50,8 +48,6 @@ namespace CUButt
             UpdateRate = Config.Bind("General", "Update Rate", 0.005f, "Vibration update rate.");
             GlobalMultiplier = Config.Bind("Vibration triggers", "Global", 1f, "Any vibration scale.");
             PainMultiplier = Config.Bind("Vibration triggers", "Pain multiplier", 1f, "Multiple vibration by pain.");
-            PainSpikeDuration = Config.Bind("Vibration triggers", "Pain spike duration", 0.8f, "Painspike duration in seconds.");
-            PainSpikeThreashold = Config.Bind("Vibration triggers", "Pain spike threashold", 5f, "Painspike threashold in pain units.");
             Plugin.Log.LogInfo("Config loaded.");
         }
 

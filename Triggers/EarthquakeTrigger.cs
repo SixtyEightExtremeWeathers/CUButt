@@ -6,20 +6,14 @@ namespace CUButt.Triggers
     [HarmonyPatch(typeof(global::WorldGeneration), "Update")]
     public static class Earthquake
     {
-        public static float _earthquakeIntensity;
-        private static float EarthQuakerMultiplier => 1;
+        private static float EarthQuakeMultiplier => 1;
 
         private static void Postfix(global::WorldGeneration __instance)
         {
-            _earthquakeIntensity = Mathf.Clamp01(__instance.earthquakeIntensity);
-            Add();
-        }
-
-        public static void Add()
-        {
-            if (_earthquakeIntensity > 0.01)
+            float EarthquakeIntensity = Mathf.Clamp01(__instance.earthquakeIntensity);
+            if (EarthquakeIntensity > 0.01)
             {
-                float quake = Mathf.Lerp(0.12f, 0.48f, Timer.Value) * _earthquakeIntensity * EarthQuakerMultiplier;
+                float quake = Mathf.Lerp(0.12f, 0.48f, Timer.Value) * EarthquakeIntensity * EarthQuakeMultiplier;
                 VibrationManager.SetSpeed(quake);
             }
         }

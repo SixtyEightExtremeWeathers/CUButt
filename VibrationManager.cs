@@ -20,6 +20,10 @@ namespace CUButt
         internal static void Tick()
         {
             if (!_initialized || !Timer.CanUpdate || queue.Count == 0)return;
+            if (Plugin.WSMode.Value)
+            {
+                SetSpeed(WholesomeOutput(), 0);
+            }
 
             SendSpeed(queue[0].speed);
             queue.RemoveAt(0);
@@ -76,7 +80,6 @@ namespace CUButt
             List<VibrationPoint> points = sequence.Select(v => new VibrationPoint{ speed = v, priority = priority}).ToList();
             AddPointSequence(points);
         }
-
 
         private static float WholesomeOutput()
         {

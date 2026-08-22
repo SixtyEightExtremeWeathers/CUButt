@@ -21,7 +21,7 @@ namespace CUButt.Triggers
             if (Timer.Time < _electricalUntil)
             {
                 float electrical = Mathf.Lerp(0.62f, 1.0f, Timer.Value) * _electricalStrength;
-                //VibrationManager.Add(electrical);
+                VibrationManager.SetSpeed(electrical, 1);
             }
             else
             {
