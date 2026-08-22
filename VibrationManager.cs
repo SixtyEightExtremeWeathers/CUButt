@@ -8,7 +8,7 @@ using System.Collections.Generic;
 
 namespace CUButt
 {
-    internal static class VibrationManager
+    public static class VibrationManager
     {
         private static List<VibrationPoint> queue = Enumerable.Repeat(new VibrationPoint { speed = 0, priority = 0 }, 600).ToList();
 
