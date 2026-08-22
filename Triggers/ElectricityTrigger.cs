@@ -21,7 +21,7 @@ namespace CUButt.Triggers
             if (Timer.Time < _electricalUntil)
             {
                 float electrical = Mathf.Lerp(0.62f, 1.0f, Timer.Value) * _electricalStrength;
-                VibrationManager.Add(electrical);
+                //VibrationManager.Add(electrical);
             }
             else
             {
@@ -39,7 +39,7 @@ namespace CUButt.Triggers
         {
             object info = __args != null && __args.Length > 0 ? __args[0] : null;
             var limb = info == null ? null : LimbField?.GetValue(info) as global::Limb;
-            __state = limb != null && VibrationManager.IsPlayerBody(limb.body);
+            __state = limb != null;
         }
 
         private static void Postfix(bool __state)
@@ -57,7 +57,7 @@ namespace CUButt.Triggers
     {
         private static void Prefix(global::CoilScript __instance, global::Limb __0, ref bool __state)
         {
-            __state = __instance.cooldown <= 0.0f && __0 != null && VibrationManager.IsPlayerBody(__0.body);
+            __state = __instance.cooldown <= 0.0f && __0 != null;
         }
 
         private static void Postfix(bool __state)

@@ -12,7 +12,7 @@ namespace CUButt.Triggers
         public const float LandingCooldown = 0.12f;
         private static void Prefix(global::Body __instance, Collision2D __0)
         {
-            if (!VibrationManager.IsPlayerBody(__instance) || __0 == null)return;
+            if (__0 == null)return;
 
             float downwardSpeed = -__instance.lastTimeStepVelocity.y;
             if (downwardSpeed < 0.75f || !HasHorizontalContact(__0))
@@ -50,7 +50,7 @@ namespace CUButt.Triggers
             if (Timer.Time < _landingUntil)
             {
                 float fade = Mathf.InverseLerp(_landingUntil, _landingUntil - LandingCooldown, Timer.Time);
-                VibrationManager.Add(_landingStrength * Mathf.Clamp01(fade));
+                //VibrationManager.Add(_landingStrength * Mathf.Clamp01(fade));
             }
             else
             {

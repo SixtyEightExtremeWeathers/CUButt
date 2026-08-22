@@ -4,14 +4,13 @@ using UnityEngine;
 using System.Linq;
 using Buttplug.Client;
 using Buttplug.Core.Messages;
+using System.Collections.Generic;
 
 namespace CUButt
 {
     internal static class VibrationManager
     {
-        
-
-        private static float _tempSpeed;
+        private static List<VibrationPoint> queue = Enumerable.Repeat(new VibrationPoint { speed = 0, priority = 0 }, 600).ToList();
 
         static private ButtplugClient _client;
         static public bool _initialized;
@@ -20,39 +19,64 @@ namespace CUButt
 
         internal static void Tick()
         {
-            if (!_initialized)return;
+            if (!_initialized || !Timer.CanUpdate || queue.Count == 0)return;
 
-            float speed;
-            if (!Plugin.WSMode.Value) 
+            SendSpeed(queue[0].speed);
+            queue.RemoveAt(0);
+            queue.Add(new VibrationPoint { speed = 0, priority = 0 });
+            Timer.CanUpdate = false;
+        }
+
+        private static void SetPoint(VibrationPoint point, int index = 0)
+        {
+            int priority = point.priority;
+            float speed = Math.Clamp(point.speed, 0f, 1f);
+            index = Math.Clamp(index, 0, Math.Max(0, queue.Count - 1));
+
+            int queuePriority;
+            float queueSpeed;
+            if (queue.Count > index)
             {
-                speed = CalculateOutput();
+                queuePriority = queue[index].priority;
+                queueSpeed = queue[index].speed;
             }
             else
             {
-                speed = WholesomeOutput();
+                queuePriority = 0;
+                queueSpeed = 0;
             }
 
-            SendSpeed(speed);
+            if (queuePriority < priority)
+            {
+                queue[index] = new VibrationPoint { speed = speed, priority = priority };
+            }
+            else if (queueSpeed < speed && queuePriority <= priority)
+            {
+                queue[index] = new VibrationPoint { speed = speed, priority = priority };
+            }
         }
 
-        public static void Add(float speed)
+        public static void SetSpeed(float speed, int priority = 0)
         {
-            _tempSpeed = Mathf.Max(speed, _tempSpeed);
+            SetPoint(new VibrationPoint { speed = speed, priority = priority });
         }
 
-        internal static float CalculateOutput()
+        public static void AddPointSequence(List<VibrationPoint> sequence)
         {
-            _tempSpeed = 0f;
-            if (Triggers.Body.IsDead()){return _tempSpeed;}
-
-
-            Triggers.Earthquake.Add();
-            Triggers.Landing.Add();
-            Triggers.Body.Add();
-            Triggers.Electricity.Add();
-
-            return _tempSpeed;
+            int index = 0;
+            foreach (var point in sequence)
+            {
+                SetPoint(point, index);
+                index++;
+            }
         }
+
+        public static void AddSpeedSequence(List<float> sequence, int priority = 0)
+        {
+            List<VibrationPoint> points = sequence.Select(v => new VibrationPoint{ speed = v, priority = priority}).ToList();
+            AddPointSequence(points);
+        }
+
 
         private static float WholesomeOutput()
         {
@@ -90,10 +114,6 @@ namespace CUButt
         
         }
 
-        internal static bool IsPlayerBody(Body body)
-        {
-            return body != null && PlayerCamera.main != null && PlayerCamera.main.body == body;
-        }
 
 
         static public async Task Initialize()

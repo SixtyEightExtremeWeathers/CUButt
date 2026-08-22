@@ -89,6 +89,8 @@ namespace CUButt.Triggers
             _lastPain = pain;
             _wasAlive = alive;
             _wasConscious = conscious;
+
+            Add();
         }
 
 
@@ -147,29 +149,29 @@ namespace CUButt.Triggers
 
             if (_criticalState)
             {
-                VibrationManager.Add(VibrationManager.SharpPulse(Timer.Time, 3.4f));
-                VibrationManager.Add(unconsciousImpulse);
+                VibrationManager.SetSpeed(VibrationManager.SharpPulse(Timer.Time, 3.4f));
+                VibrationManager.SetSpeed(unconsciousImpulse);
             }
 
-            VibrationManager.Add(Mathf.Clamp01(_painLevel) * PainMultiplier);
+            VibrationManager.SetSpeed(Mathf.Clamp01(_painLevel) * PainMultiplier);
 
             if (_bleedingLevel > 0.0f)
             {
                 float bleedPulse = VibrationManager.SmoothPulse(Timer.Time, 1f);
                 float bleedAmplitude = Mathf.Lerp(0.08f, 0.40f, _bleedingLevel);
-                VibrationManager.Add(bleedPulse * bleedAmplitude);
+                VibrationManager.SetSpeed(bleedPulse * bleedAmplitude);
             }
 
             if (_cardiacProblem)
             {
-                VibrationManager.Add(VibrationManager.SharpPulse(Timer.Time, 3.4f) * 0.72f);
+                VibrationManager.SetSpeed(VibrationManager.SharpPulse(Timer.Time, 3.4f) * 0.72f);
             }
 
             if (_radiationLevel > 0.001f)
             {
                 float radiation = Mathf.Lerp(0.58f, 1.0f, Timer.Value);
                 radiation *= Mathf.Lerp(0.70f, 1.0f, _radiationLevel);
-                VibrationManager.Add(radiation);
+                VibrationManager.SetSpeed(radiation);
             }
 
 
@@ -177,7 +179,7 @@ namespace CUButt.Triggers
             {
                 float remaining = _painSpikeUntil - Timer.Time;
                 float fade = remaining < 0.15f ? remaining / 0.15f : 1.0f;
-                VibrationManager.Add(_painSpikeStrength * Mathf.Clamp01(fade));
+                VibrationManager.SetSpeed(_painSpikeStrength * Mathf.Clamp01(fade));
             }
             else
             {

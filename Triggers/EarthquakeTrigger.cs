@@ -12,6 +12,7 @@ namespace CUButt.Triggers
         private static void Postfix(global::WorldGeneration __instance)
         {
             _earthquakeIntensity = Mathf.Clamp01(__instance.earthquakeIntensity);
+            Add();
         }
 
         public static void Add()
@@ -19,7 +20,7 @@ namespace CUButt.Triggers
             if (_earthquakeIntensity > 0.01)
             {
                 float quake = Mathf.Lerp(0.12f, 0.48f, Timer.Value) * _earthquakeIntensity * EarthQuakerMultiplier;
-                VibrationManager.Add(quake);
+                VibrationManager.SetSpeed(quake);
             }
         }
     }
