@@ -20,4 +20,11 @@ namespace CUButt
             }
         }
     }
+
+    public struct VibrationPoint
+    {
+        public float speed;
+        public float priority;
+    };
+
 }

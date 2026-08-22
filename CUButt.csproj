@@ -74,7 +74,12 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Buttplug" Version="5.0.1" />
+    <Reference Include="Buttplug">
+        <HintPath>lib\Buttplug.dll</HintPath>
+    </Reference>
+    <Reference Include="Buttplug.Newtonsoft.Json">
+        <HintPath>lib\Buttplug.Newtonsoft.Json.dll</HintPath>
+    </Reference>
     <PackageReference Include="Costura.Fody" Version="6.2.0">
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
