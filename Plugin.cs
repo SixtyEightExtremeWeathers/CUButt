@@ -11,7 +11,7 @@ namespace CUButt
     {
         public const string PluginGuid = "seew.casualtiesunknown.cubutt";
         public const string PluginName = "CUButt";
-        public const string PluginVersion = "1.2.0";
+        public const string PluginVersion = "1.1.0";
 
         internal static ManualLogSource Log;
 
@@ -43,9 +43,9 @@ namespace CUButt
 
         private void LoadConfig()
         {
-            WSMode = Config.Bind("General", "Wholesome mode", false, "Wholesome vibrations :3");
-            GlobalMultiplier = Config.Bind("Vibration triggers", "Global", 1f, "Any vibration scale.");
-            PainMultiplier = Config.Bind("Vibration triggers", "Pain multiplier", 1f, "Multiple vibration by pain.");
+            WSMode = Config.Bind("General", "WholesomeMode", false, "Wholesome vibrations :3");
+            GlobalMultiplier = Config.Bind("Vibration triggers", "GlobalMultiplier", 1f, "All vibrations are multiplied by this number.");
+            PainMultiplier = Config.Bind("Vibration triggers", "PainMultiplier", 1f, "Pain vibrations are multiplied by this number.");
             Plugin.Log.LogInfo("Config loaded.");
         }
 
