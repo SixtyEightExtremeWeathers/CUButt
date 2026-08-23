@@ -151,9 +151,6 @@ namespace CUButt
 
             speed = Math.Clamp(speed * Plugin.GlobalMultiplier.Value, 0f, 1f);
 
-            if (Math.Abs(_lastSpeed - speed) < Plugin.UpdateRate.Value){return;}
-            _lastSpeed = speed;
-
             var devices = _client.Devices
                 .Where(device =>
                     device.HasOutput(OutputType.Vibrate))

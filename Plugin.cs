@@ -16,9 +16,8 @@ namespace CUButt
         internal static ManualLogSource Log;
 
         internal static ConfigEntry<float> GlobalMultiplier;
-        internal static ConfigEntry<float> UpdateRate;
         internal static ConfigEntry<bool> WSMode;
-        internal static ConfigEntry<float> PainMultiplier; //1f
+        internal static ConfigEntry<float> PainMultiplier; 
 
         private Harmony _harmony;
 
@@ -45,7 +44,6 @@ namespace CUButt
         private void LoadConfig()
         {
             WSMode = Config.Bind("General", "Wholesome mode", false, "Wholesome vibrations :3");
-            UpdateRate = Config.Bind("General", "Update Rate", 0.005f, "Vibration update rate.");
             GlobalMultiplier = Config.Bind("Vibration triggers", "Global", 1f, "Any vibration scale.");
             PainMultiplier = Config.Bind("Vibration triggers", "Pain multiplier", 1f, "Multiple vibration by pain.");
             Plugin.Log.LogInfo("Config loaded.");
