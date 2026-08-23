@@ -9,6 +9,7 @@ namespace CUButt
         public static float Time;
         public static bool CanUpdate = false;
         public static float TimeSincePain = Mathf.Infinity;
+        public static float InitAttemptTimer = 0f;
 
         private const float UpdateInterval = 0.1f;
 
@@ -17,6 +18,7 @@ namespace CUButt
             Time = unscaledTime;
             _randomTimer -= unscaledDeltaTime;
             TimeSincePain += unscaledDeltaTime;
+            InitAttemptTimer += unscaledDeltaTime;
 
             if (_randomTimer <= 0.0f)
             {

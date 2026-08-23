@@ -5,6 +5,7 @@ using System.Linq;
 using Buttplug.Client;
 using Buttplug.Core.Messages;
 using System.Collections.Generic;
+using System.Net.Sockets;
 
 namespace CUButt
 {
@@ -19,6 +20,12 @@ namespace CUButt
 
         internal static void Tick()
         {
+            if (!_initialized && Timer.InitAttemptTimer > 5f)
+            {
+                Timer.InitAttemptTimer = 0f;
+                Initialize();
+                return;
+            }
             if (!_initialized || !Timer.CanUpdate || queue.Count == 0)return;
             if (Plugin.WSMode.Value)
             {
@@ -126,9 +133,16 @@ namespace CUButt
 
             _client = new ButtplugClient("CUButt");
 
+            try
+            {
             await _client.ConnectAsync("ws://127.0.0.1:12345");
-
             _initialized = true;
+            }
+            catch (Exception ex)
+            {
+                Plugin.Log.LogError($"Failed to connect to Intiface. Retrying in 5 seconds.");
+            }
+
         }
 
         public static async Task SendSpeed(float speed)
