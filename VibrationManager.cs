@@ -21,11 +21,8 @@ namespace CUButt
                 VibrationController.Initialize();
                 return;
             }
+
             if (!VibrationController.Initialized || !Timer.CanUpdate || queue.Count == 0)return;
-            if (Plugin.WSMode.Value)
-            {
-                SetSpeed(WholesomeOutput(), 0);
-            }
 
             VibrationController.SendSpeed(queue[0].speed);
             queue.RemoveAt(0);
@@ -81,42 +78,6 @@ namespace CUButt
         {
             List<VibrationPoint> points = sequence.Select(v => new VibrationPoint{ speed = v, priority = priority}).ToList();
             AddPointSequence(points);
-        }
-
-        private static float WholesomeOutput()
-        {
-            float opiate = Triggers.Body._opiate;
-            float happiness = Triggers.Body._happiness;
-            float HappinessMin = 5.0f;
-            float HappinessMax = 70.0f;
-            float HappinessMaxStrength = 0.75f;
-            float OpiateMin = 5.0f;
-            float OpiateMax = 45.0f;
-            float OpiateMinStrength = 0.20f;
-            float OpiateMaxStrength = 1.00f;
-            float OpiateCycleSeconds = 2.0f;
-
-            if (opiate > OpiateMin)
-            {
-                float trueOpiateMaxStrength;
-                if (opiate > OpiateMax) {trueOpiateMaxStrength = OpiateMaxStrength;}
-                else
-                {
-                    trueOpiateMaxStrength = (opiate - OpiateMin)/(OpiateMax - OpiateMin)*OpiateMaxStrength;
-                }
-
-                float midpoint = (OpiateMinStrength + trueOpiateMaxStrength) * 0.5f;
-                float amplitude = (trueOpiateMaxStrength - OpiateMinStrength) * 0.5f;
-                return midpoint + amplitude * Mathf.Sin(Timer.Time * Mathf.PI * 2.0f / OpiateCycleSeconds);
-            }
-
-            if (happiness < HappinessMin) {return 0;}
-            else if (happiness > HappinessMax) {return HappinessMaxStrength;}
-            else
-            {
-                return (happiness - HappinessMin)/(HappinessMax-HappinessMin)*HappinessMaxStrength;
-            }
-        
         }
 
 

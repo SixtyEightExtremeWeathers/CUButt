@@ -22,6 +22,7 @@ namespace CUButt
             try
             {
             await _client.ConnectAsync("ws://127.0.0.1:12345");
+            await _client.StartScanningAsync();
             Initialized = true;
             }
             catch (Exception ex)
