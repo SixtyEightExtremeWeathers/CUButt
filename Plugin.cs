@@ -27,7 +27,7 @@ namespace CUButt
             gameObject.hideFlags = HideFlags.HideAndDontSave;
 
             LoadConfig();
-            await VibrationManager.Initialize();
+            await VibrationController.Initialize();
 
             _harmony = new Harmony(PluginGuid);
             _harmony.PatchAll(typeof(Plugin).Assembly);

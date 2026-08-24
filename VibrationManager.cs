@@ -11,28 +11,23 @@ namespace CUButt
 {
     public static class VibrationManager
     {
-        private static List<VibrationPoint> queue = Enumerable.Repeat(new VibrationPoint { speed = 0, priority = 0 }, 600).ToList();
-
-        static private ButtplugClient _client;
-        static public bool _initialized;
-        static private float _lastSpeed;
-
+        internal static List<VibrationPoint> queue = Enumerable.Repeat(new VibrationPoint { speed = 0, priority = 0 }, 600).ToList();
 
         internal static void Tick()
         {
-            if (!_initialized && Timer.InitAttemptTimer > 5f)
+            if (!VibrationController.Initialized && Timer.InitAttemptTimer > 5f)
             {
                 Timer.InitAttemptTimer = 0f;
-                Initialize();
+                VibrationController.Initialize();
                 return;
             }
-            if (!_initialized || !Timer.CanUpdate || queue.Count == 0)return;
+            if (!VibrationController.Initialized || !Timer.CanUpdate || queue.Count == 0)return;
             if (Plugin.WSMode.Value)
             {
                 SetSpeed(WholesomeOutput(), 0);
             }
 
-            SendSpeed(queue[0].speed);
+            VibrationController.SendSpeed(queue[0].speed);
             queue.RemoveAt(0);
             queue.Add(new VibrationPoint { speed = 0, priority = 0 });
             Timer.CanUpdate = false;
@@ -124,44 +119,6 @@ namespace CUButt
         
         }
 
-
-
-        static public async Task Initialize()
-        {
-            if (_initialized)
-                return;
-
-            _client = new ButtplugClient("CUButt");
-
-            try
-            {
-            await _client.ConnectAsync("ws://127.0.0.1:12345");
-            _initialized = true;
-            }
-            catch (Exception ex)
-            {
-                Plugin.Log.LogError($"Failed to connect to Intiface. Retrying in 5 seconds.");
-            }
-
-        }
-
-        public static async Task SendSpeed(float speed)
-        {
-            if (!_initialized || _client == null || !_client.Connected){return;}
-
-            speed = Math.Clamp(speed * Plugin.GlobalMultiplier.Value, 0f, 1f);
-
-            var devices = _client.Devices
-                .Where(device =>
-                    device.HasOutput(OutputType.Vibrate))
-                .ToArray();
-
-            var tasks = devices.Select(device =>
-                device.RunOutputAsync(
-                    DeviceOutput.Vibrate.Percent(speed)));
-
-            await Task.WhenAll(tasks);
-        }
 
         public static float SmoothPulse(float time, float frequency)
         {
