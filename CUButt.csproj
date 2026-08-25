@@ -74,11 +74,11 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="Buttplug">
-        <HintPath>lib\Buttplug.dll</HintPath>
+    <Reference Include="ButtplugManaged">
+        <HintPath>lib\ButtplugManaged.dll</HintPath>
     </Reference>
-    <Reference Include="Buttplug.Newtonsoft.Json">
-        <HintPath>lib\Buttplug.Newtonsoft.Json.dll</HintPath>
+    <Reference Include="WebSocketSharp">
+        <HintPath>lib\websocket-sharp.dll</HintPath>
     </Reference>
     <PackageReference Include="Costura.Fody" Version="6.2.0">
       <PrivateAssets>all</PrivateAssets>

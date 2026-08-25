@@ -1,18 +1,16 @@
 using System;
-using System.Threading.Tasks;
 using System.Linq;
-using Buttplug.Client;
-using Buttplug.Core.Messages;
-using System.Net.Sockets;
+using System.Threading.Tasks;
+using ButtplugManaged;
 
 namespace CUButt
 {
-    class VibrationController
+    public static class VibrationController
     {
-        static private ButtplugClient _client;
-        static public bool Initialized = false;
+        private static ButtplugClient _client;
+        public static bool Initialized = false;
 
-        static public async Task Initialize()
+        public static async Task Initialize()
         {
             if (Initialized)
                 return;
@@ -21,31 +19,55 @@ namespace CUButt
 
             try
             {
-            await _client.ConnectAsync("ws://127.0.0.1:12345");
-            await _client.StartScanningAsync();
-            Initialized = true;
+                var connector = new ButtplugWebsocketConnectorOptions(
+                    new Uri("ws://127.0.0.1:12345")
+                );
+
+                await _client.ConnectAsync(connector);
+
+                await _client.StartScanningAsync();
+
+                Plugin.Log.LogInfo($"Devices found: {_client.Devices.Length}");
+
+                int vibrators = _client.Devices
+                    .Count(device =>
+                        device.AllowedMessages.ContainsKey(DeviceMessages.VibrateCmd));
+
+                Plugin.Log.LogInfo($"Available vibrators: {vibrators}");
+
+                Initialized = true;
             }
             catch (Exception ex)
             {
-                Plugin.Log.LogError($"Failed to connect to Intiface. Retrying in 5 seconds. Error: {ex.Message}");
+                Plugin.Log.LogError(
+                    $"Failed to connect to Intiface. Error: {ex.Message}"
+                );
             }
-
         }
+
 
         public static async Task SendSpeed(float speed)
         {
-            if (!Initialized || _client == null || !_client.Connected){return;}
+            if (!Initialized || _client == null || !_client.Connected)
+                return;
 
-            speed = Math.Clamp(speed * Plugin.GlobalMultiplier.Value, 0f, 1f);
+            speed = Math.Clamp(
+                speed * Plugin.GlobalMultiplier.Value,
+                0f,
+                1f
+            );
+
 
             var devices = _client.Devices
                 .Where(device =>
-                    device.HasOutput(OutputType.Vibrate))
+                    device.AllowedMessages.ContainsKey(DeviceMessages.VibrateCmd))
                 .ToArray();
 
+
             var tasks = devices.Select(device =>
-                device.RunOutputAsync(
-                    DeviceOutput.Vibrate.Percent(speed)));
+                device.SendVibrateCmd(speed)
+            );
+
 
             await Task.WhenAll(tasks);
         }

@@ -22,7 +22,7 @@ namespace CUButt.Triggers
             {
                 PainTrigger(__instance);
                 DeathTrigger(__instance);
-                BleedingTrigger(__instance);
+                //BleedingTrigger(__instance);
                 RadiationTrigger(__instance);
                 ECGTrigger(__instance);
             }

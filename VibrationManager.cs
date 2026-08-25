@@ -2,8 +2,6 @@ using System;
 using System.Threading.Tasks;
 using UnityEngine;
 using System.Linq;
-using Buttplug.Client;
-using Buttplug.Core.Messages;
 using System.Collections.Generic;
 using System.Net.Sockets;
 

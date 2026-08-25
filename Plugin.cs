@@ -11,7 +11,7 @@ namespace CUButt
     {
         public const string PluginGuid = "seew.casualtiesunknown.cubutt";
         public const string PluginName = "CUButt";
-        public const string PluginVersion = "1.1.0";
+        public const string PluginVersion = "1.1.1";
 
         internal static ManualLogSource Log;
 
