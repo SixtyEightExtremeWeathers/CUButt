@@ -2,6 +2,7 @@ using UnityEngine;
 using System.Reflection;
 using HarmonyLib;
 using System;
+using System.Collections.Generic;
 
 namespace CUButt.Triggers
 {
@@ -10,23 +11,9 @@ namespace CUButt.Triggers
         private static float _electricalUntil;
         private static float _electricalStrength;
 
-        internal static void TriggerElectricalShock(float strength, float duration = 1.25f)
+        internal static void TriggerElectricalShock()
         {
-            _electricalStrength = Mathf.Max(_electricalStrength, Mathf.Clamp01(strength));
-            _electricalUntil = Mathf.Max(_electricalUntil, Timer.Time + Mathf.Max(0.1f, duration));
-        }
-
-        public static void Add()
-        {
-            if (Timer.Time < _electricalUntil)
-            {
-                float electrical = Mathf.Lerp(0.62f, 1.0f, Timer.Value) * _electricalStrength;
-                VibrationManager.SetSpeed(electrical, 1);
-            }
-            else
-            {
-                _electricalStrength = 0.0f;
-            }
+            VibrationManager.AddSpeedSequence(new List<float> { 0.3f, 0.9f, 0.4f, 0.5f, 0.95f, 0.1f, 0.8f });
         }
     }
 
@@ -46,7 +33,7 @@ namespace CUButt.Triggers
         {
             if (__state)
             {
-                Electricity.TriggerElectricalShock(0.90f, 0.75f);
+                Electricity.TriggerElectricalShock();
             }
         }
     }
@@ -64,7 +51,7 @@ namespace CUButt.Triggers
         {
             if (__state)
             {
-                Electricity.TriggerElectricalShock(1.0f, 1.5f);
+                Electricity.TriggerElectricalShock();
             }
         }
     }

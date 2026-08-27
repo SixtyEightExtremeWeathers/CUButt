@@ -8,8 +8,9 @@ namespace CUButt.Triggers
     internal static class Body
     {
         private static float PainMultiplier => 0.60f * Plugin.PainMultiplier.Value;
-
         private static float _lastPain;
+        private static float _lastPainTimer;
+        private static float _lastRadiation;
 
 
         private static void Postfix(global::Body __instance)
@@ -22,7 +23,7 @@ namespace CUButt.Triggers
             {
                 PainTrigger(__instance);
                 DeathTrigger(__instance);
-                //BleedingTrigger(__instance);
+                BleedingTrigger(__instance);
                 RadiationTrigger(__instance);
                 ECGTrigger(__instance);
             }
@@ -52,7 +53,7 @@ namespace CUButt.Triggers
 
                 float midpoint = (OpiateMinStrength + trueOpiateMaxStrength) * 0.5f;
                 float amplitude = (trueOpiateMaxStrength - OpiateMinStrength) * 0.5f;
-                VibrationManager.SetSpeed(midpoint + amplitude * Mathf.Sin(Timer.Time * Mathf.PI * 2.0f / OpiateCycleSeconds), 99);
+                VibrationManager.SetSpeed(midpoint + amplitude * Mathf.Sin(Time.time * Mathf.PI * 2.0f / OpiateCycleSeconds), 99);
             }
 
             if (happiness < HappinessMin) {VibrationManager.SetSpeed(0f, 99);}
@@ -65,14 +66,16 @@ namespace CUButt.Triggers
 
         private static void PainTrigger(global::Body body)
         {
+
+            _lastPainTimer += Time.deltaTime;
             float Pain = body.averagePain;
             float PainDelta = Pain - _lastPain;
-            VibrationManager.SetSpeed(Mathf.Clamp01((Pain-0.3f*Timer.TimeSincePain)/100f * PainMultiplier));
+            VibrationManager.SetSpeed(Mathf.Clamp01((Pain-0.3f*_lastPainTimer)/100f * PainMultiplier));
 
 
             if (PainDelta >= 5f)
             {
-                Timer.ResetPainTimer();
+                _lastPainTimer = 0f;
                 List<float> painSpikePattern = PatternGenerator.CreateImpulse(new List<VibrationCheckPoint>
                 {
                     new VibrationCheckPoint(0.0f, 0.0f, InterpolationType.Linear),
@@ -104,46 +107,42 @@ namespace CUButt.Triggers
             float bleedPulse;
 
             Limb[] limbs = body.limbs;
-            if (limbs == null)
+            if (limbs != null)
             {
-                bleedPulse = VibrationManager.SmoothPulse(Timer.Time, 1f);
-                bleedAmplitude = Mathf.Lerp(0.08f, 0.40f, severity);
-                VibrationManager.SetSpeed(bleedPulse * bleedAmplitude);
-            }
-
-            for (int i = 0; i < limbs.Length; i++)
-            {
-                Limb limb = limbs[i];
-                if (limb == null || limb.dismembered)
+                for (int i = 0; i < limbs.Length; i++)
                 {
-                    continue;
-                }
+                    Limb limb = limbs[i];
+                    if (limb == null || limb.dismembered)
+                    {
+                        continue;
+                    }
 
-                if (limb.bleedAmount > 0.01f)
-                {
-                    severity = Mathf.Max(severity, Mathf.Clamp01(limb.bleedAmount / 30.0f));
+                    if (limb.bleedAmount > 0.01f)
+                    {
+                        severity = Mathf.Max(severity, Mathf.Clamp01(limb.bleedAmount / 30.0f));
+                    }
                 }
             }
 
-            bleedPulse = VibrationManager.SmoothPulse(Timer.Time, 1f);
+            if (severity <= 0.0f)
+            {
+                return;
+            }
+
+            bleedPulse = 0.5f + 0.5f * Mathf.Sin(Time.time * 1f * Mathf.PI * 2.0f);
             bleedAmplitude = Mathf.Lerp(0.08f, 0.40f, severity);
             VibrationManager.SetSpeed(bleedPulse * bleedAmplitude);
         }
 
         private static void RadiationTrigger(global::Body body)
         {
-            float exposure = 0.0f;
-            if (PlayerCamera.main != null)
-            {
-                exposure = Mathf.Clamp01(PlayerCamera.main.irradiateIntensity);
-            }
+            float RadiationLevel = body.radiationSickness*0.3f;
+            float RadiationSpeed = (RadiationLevel - _lastRadiation)/Time.deltaTime;
+            _lastRadiation = RadiationLevel;
 
-            float RadiationLevel = Mathf.Max(exposure, Mathf.Clamp01(body.radiationSickness / 100.0f));
-
-            if (RadiationLevel > 0.1f)
+            if (RadiationSpeed > 0.01f)
             {
-                float radiation = Mathf.Lerp(0.58f, 1.0f, Timer.Value);
-                radiation *= Mathf.Lerp(0.70f, 1.0f, RadiationLevel);
+                float radiation = Random.Range(0f, 1f) * RadiationSpeed;
                 VibrationManager.SetSpeed(radiation, 1);
             }
         }

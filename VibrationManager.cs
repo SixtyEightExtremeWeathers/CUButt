@@ -3,29 +3,43 @@ using System.Threading.Tasks;
 using UnityEngine;
 using System.Linq;
 using System.Collections.Generic;
-using System.Net.Sockets;
+using ButtplugManaged;
 
 namespace CUButt
 {
+    public class VibrationPoint
+    {
+        public float speed;
+        public int priority;
+    }
+
+
     public static class VibrationManager
     {
         internal static List<VibrationPoint> queue = Enumerable.Repeat(new VibrationPoint { speed = 0, priority = 0 }, 600).ToList();
+        private static ButtplugClient _client;
+        public static bool Initialized = false;
+        private static float InitAttemptTimer = 0f;
+        private static float UpdateTimer = 0f;
 
-        internal static void Tick()
+        internal async static Task Tick()
         {
-            if (!VibrationController.Initialized && Timer.InitAttemptTimer > 5f)
+            InitAttemptTimer += Time.unscaledDeltaTime;
+            UpdateTimer += Time.unscaledDeltaTime;
+
+            if (!Initialized && InitAttemptTimer > 5f)
             {
-                Timer.InitAttemptTimer = 0f;
-                VibrationController.Initialize();
+                InitAttemptTimer = 0f;
+                await Initialize();
                 return;
             }
 
-            if (!VibrationController.Initialized || !Timer.CanUpdate || queue.Count == 0)return;
+            if (!Initialized || UpdateTimer < 0.1f || queue.Count == 0)return;
 
-            VibrationController.SendSpeed(queue[0].speed);
+            await SendSpeed(queue[0].speed);
             queue.RemoveAt(0);
             queue.Add(new VibrationPoint { speed = 0, priority = 0 });
-            Timer.CanUpdate = false;
+            UpdateTimer = 0f;
         }
 
         private static void SetPoint(VibrationPoint point, int index = 0)
@@ -78,23 +92,64 @@ namespace CUButt
             AddPointSequence(points);
         }
 
-
-        public static float SmoothPulse(float time, float frequency)
+        public static async Task Initialize()
         {
-            return 0.5f + 0.5f * Mathf.Sin(time * frequency * Mathf.PI * 2.0f);
-        }
+            if (Initialized)
+                return;
 
-        public static float SharpPulse(float time, float frequency)
-        {
-            float phase = Mathf.Repeat(time * frequency, 1.0f);
-            if (phase >= 0.32f)
+            _client = new ButtplugClient("CUButt");
+
+            try
             {
-                return 0.0f;
-            }
+                var connector = new ButtplugWebsocketConnectorOptions(
+                    new Uri("ws://127.0.0.1:12345")
+                );
 
-            float normalized = 1.0f - phase / 0.32f;
-            return normalized * normalized;
+                await _client.ConnectAsync(connector);
+
+                await _client.StartScanningAsync();
+
+
+                int vibrators = _client.Devices
+                    .Count(device =>
+                        device.AllowedMessages.ContainsKey(DeviceMessages.VibrateCmd));
+
+
+                Initialized = true;
+            }
+            catch (Exception ex)
+            {
+                Plugin.Log.LogError(
+                    $"Failed to connect to Intiface. Error: {ex.Message}"
+                );
+            }
         }
 
+
+        public static async Task SendSpeed(float speed)
+        {
+            if (!Initialized || _client == null || !_client.Connected)
+                return;
+
+            speed = Math.Clamp(
+                speed * Plugin.GlobalMultiplier.Value,
+                0f,
+                1f
+            );
+
+
+            var devices = _client.Devices
+                .Where(device =>
+                    device.AllowedMessages.ContainsKey(DeviceMessages.VibrateCmd))
+                .ToArray();
+
+
+            var tasks = devices.Select(device =>
+                device.SendVibrateCmd(speed)
+            );
+
+
+            await Task.WhenAll(tasks);
+        }
     }
 }

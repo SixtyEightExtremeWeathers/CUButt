@@ -13,7 +13,7 @@ namespace CUButt.Triggers
             float EarthquakeIntensity = Mathf.Clamp01(__instance.earthquakeIntensity);
             if (EarthquakeIntensity > 0.01)
             {
-                float quake = Mathf.Lerp(0.12f, 0.48f, Timer.Value) * EarthquakeIntensity * EarthQuakeMultiplier;
+                float quake = Mathf.Lerp(0.12f, 0.48f, Time.time) * EarthquakeIntensity * EarthQuakeMultiplier;
                 VibrationManager.SetSpeed(quake);
             }
         }

@@ -11,7 +11,7 @@ namespace CUButt
     {
         public const string PluginGuid = "seew.casualtiesunknown.cubutt";
         public const string PluginName = "CUButt";
-        public const string PluginVersion = "1.1.1";
+        public const string PluginVersion = "1.1.2";
 
         internal static ManualLogSource Log;
 
@@ -27,7 +27,7 @@ namespace CUButt
             gameObject.hideFlags = HideFlags.HideAndDontSave;
 
             LoadConfig();
-            await VibrationController.Initialize();
+            await VibrationManager.Initialize();
 
             _harmony = new Harmony(PluginGuid);
             _harmony.PatchAll(typeof(Plugin).Assembly);
@@ -35,10 +35,9 @@ namespace CUButt
             Logger.LogInfo($"{PluginName} {PluginVersion} loaded.");
         }
 
-        private void Update()
+        private async void Update()
         {
-            Timer.Tick(Time.unscaledDeltaTime, Time.unscaledTime);
-            VibrationManager.Tick();
+            await VibrationManager.Tick();
         }
 
         private void LoadConfig()
