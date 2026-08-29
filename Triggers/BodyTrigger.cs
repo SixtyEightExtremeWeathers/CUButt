@@ -7,7 +7,6 @@ namespace CUButt.Triggers
     [HarmonyPatch(typeof(global::Body), "HandleBody")]
     internal static class Body
     {
-        private static float PainMultiplier => 0.60f * Plugin.PainMultiplier.Value;
         private static float _lastPain;
         private static float _lastPainTimer;
         private static float _lastRadiation;
@@ -54,14 +53,14 @@ namespace CUButt.Triggers
 
                 float midpoint = (OpiateMinStrength + trueOpiateMaxStrength) * 0.5f;
                 float amplitude = (trueOpiateMaxStrength - OpiateMinStrength) * 0.5f;
-                VibrationManager.SetSpeed(midpoint + amplitude * Mathf.Sin(Time.time * Mathf.PI * 2.0f / OpiateCycleSeconds), 99);
+                VibrationManager.SetSpeed(midpoint + amplitude * Mathf.Sin(Time.time * Mathf.PI * 2.0f / OpiateCycleSeconds), "wholesome");
             }
 
-            if (happiness < HappinessMin) {VibrationManager.SetSpeed(0f, 99);}
-            else if (happiness > HappinessMax) {VibrationManager.SetSpeed(HappinessMaxStrength, 99);}
+            if (happiness < HappinessMin) {VibrationManager.SetSpeed(0f, "wholesome");}
+            else if (happiness > HappinessMax) {VibrationManager.SetSpeed(HappinessMaxStrength, "wholesome");}
             else
             {
-                VibrationManager.SetSpeed((happiness - HappinessMin)/(HappinessMax-HappinessMin)*HappinessMaxStrength, 99);
+                VibrationManager.SetSpeed((happiness - HappinessMin)/(HappinessMax-HappinessMin)*HappinessMaxStrength, "wholesome");
             }
         }
 
@@ -71,7 +70,7 @@ namespace CUButt.Triggers
             _lastPainTimer += Time.deltaTime;
             float Pain = body.averagePain;
             float PainDelta = Pain - _lastPain;
-            VibrationManager.SetSpeed(Mathf.Clamp01((Pain-0.3f*_lastPainTimer)/100f * PainMultiplier));
+            VibrationManager.SetSpeed(Mathf.Clamp01((Pain-0.3f*_lastPainTimer)/100f), "pain");
 
 
             if (PainDelta >= 5f)
@@ -84,7 +83,7 @@ namespace CUButt.Triggers
                     new VibrationCheckPoint(0.4f, Pain*1.5f/100f, InterpolationType.Smooth),
                     new VibrationCheckPoint(0.7f, Pain*0.8f/100f, InterpolationType.Linear)
                 });
-                VibrationManager.AddSpeedSequence(painSpikePattern);
+                VibrationManager.AddSpeedSequence(painSpikePattern, "painspike");
             }
 
             _lastPain = Pain;
@@ -98,7 +97,7 @@ namespace CUButt.Triggers
                 return;
             }
 
-            VibrationManager.SetSpeed(0.0f, 100);
+            VibrationManager.SetSpeed(0.0f, "death");
         }
 
         private static void BleedingTrigger(global::Body body)
@@ -132,7 +131,7 @@ namespace CUButt.Triggers
 
             bleedPulse = 0.5f + 0.5f * Mathf.Sin(Time.time * 1f * Mathf.PI * 2.0f);
             bleedAmplitude = Mathf.Lerp(0.08f, 0.40f, severity);
-            VibrationManager.SetSpeed(bleedPulse * bleedAmplitude);
+            VibrationManager.SetSpeed(bleedPulse * bleedAmplitude, "bleeding");
         }
 
         private static void RadiationTrigger(global::Body body)
@@ -144,7 +143,7 @@ namespace CUButt.Triggers
             if (RadiationSpeed > 0.01f)
             {
                 float radiation = Random.Range(0f, 1f) * RadiationSpeed;
-                VibrationManager.SetSpeed(radiation, 1);
+                VibrationManager.SetSpeed(radiation, "radiation");
             }
         }
     
@@ -179,7 +178,7 @@ namespace CUButt.Triggers
             {
                 num = (Random.value > 0.5f) ? 1f : (-1f);
             }
-            VibrationManager.SetSpeed(num * ModeMultiplier, 2);
+            VibrationManager.SetSpeed(num * ModeMultiplier, "ecg");
         }
     
         private static void StaminaTrigger(global::Body body)
@@ -187,7 +186,7 @@ namespace CUButt.Triggers
             float stamina = body.stamina;
             if (stamina < 50f)
             {
-                VibrationManager.SetSpeed((50f - stamina) / 100f * 0.25f);
+                VibrationManager.SetSpeed((50f - stamina) / 100f * 0.25f, "stamina");
             }
         }
     }

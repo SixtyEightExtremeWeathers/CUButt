@@ -20,7 +20,7 @@ namespace CUButt.Triggers
                     new VibrationCheckPoint(3f, 0.2f, InterpolationType.Smooth),
                     new VibrationCheckPoint(7f, 0.0f, InterpolationType.Linear)
                 });
-                VibrationManager.AddSpeedSequence(tinnitusPattern, 1);
+                VibrationManager.AddSpeedSequence(tinnitusPattern, "explosion");
             }
             if (clip == "sonarouchblocked")
             {
@@ -30,7 +30,7 @@ namespace CUButt.Triggers
                     new VibrationCheckPoint(0.5f, 0.35f, InterpolationType.Smooth),
                     new VibrationCheckPoint(2f, 0f, InterpolationType.Linear)
                 });
-                VibrationManager.AddSpeedSequence(tinnitusPattern);
+                VibrationManager.AddSpeedSequence(tinnitusPattern, "soundcannon_blocked");
             }
             if (clip == "sonarouch")
             {
@@ -40,7 +40,7 @@ namespace CUButt.Triggers
                     new VibrationCheckPoint(0.2f, 0.8f, InterpolationType.Smooth),
                     new VibrationCheckPoint(15f, 0f, InterpolationType.Linear)
                 });
-                VibrationManager.AddSpeedSequence(tinnitusPattern);
+                VibrationManager.AddSpeedSequence(tinnitusPattern, "soundcannon");
             }
             if (clip == "sonarmegaouchfixed")
             {
@@ -50,7 +50,7 @@ namespace CUButt.Triggers
                     new VibrationCheckPoint(0.2f, 1f, InterpolationType.Smooth),
                     new VibrationCheckPoint(20f, 0f, InterpolationType.Linear)
                 });
-                VibrationManager.AddSpeedSequence(tinnitusPattern);
+                VibrationManager.AddSpeedSequence(tinnitusPattern, "soundcannon");
             }
         }
     }

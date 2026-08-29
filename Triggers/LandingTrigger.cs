@@ -24,7 +24,7 @@ namespace CUButt.Triggers
                 new VibrationCheckPoint(0.0f, 0.0f, InterpolationType.Smooth),
                 new VibrationCheckPoint(0.1f, strength*0.35f, InterpolationType.Linear),
             });
-            VibrationManager.AddSpeedSequence(landingPattern);
+            VibrationManager.AddSpeedSequence(landingPattern, "falling");
         }
 
         private static bool HasHorizontalContact(Collision2D collision)

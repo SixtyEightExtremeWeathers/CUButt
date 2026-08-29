@@ -10,7 +10,7 @@ namespace CUButt.Triggers
     {
         internal static void TriggerElectricalShock()
         {
-            VibrationManager.AddSpeedSequence(new List<float> { 0.3f, 0.9f, 0.4f, 0.5f, 0.95f, 0.1f, 0.8f });
+            VibrationManager.AddSpeedSequence(new List<float> { 0.3f, 0.9f, 0.4f, 0.5f, 0.95f, 0.1f, 0.8f }, "electricity");
         }
     }
 

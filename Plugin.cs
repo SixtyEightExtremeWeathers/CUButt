@@ -4,6 +4,7 @@ using HarmonyLib;
 using UnityEngine;
 using BepInEx.Configuration;
 using System;
+using System.Collections.Generic;
 
 namespace CUButt
 {
@@ -12,13 +13,13 @@ namespace CUButt
     {
         public const string PluginGuid = "seew.casualtiesunknown.cubutt";
         public const string PluginName = "CUButt";
-        public const string PluginVersion = "1.1.3";
+        public const string PluginVersion = "1.2.0";
 
         internal static ManualLogSource Log;
 
         internal static ConfigEntry<float> GlobalMultiplier;
         internal static ConfigEntry<bool> WSMode;
-        internal static ConfigEntry<float> PainMultiplier; 
+        internal static Dictionary<string, ConfigEntry<float>> Multipliers = new Dictionary<string, ConfigEntry<float>>();
 
         private Harmony _harmony;
 
@@ -27,6 +28,7 @@ namespace CUButt
             Log = Logger;
             gameObject.hideFlags = HideFlags.HideAndDontSave;
 
+            LoadThreads();
             LoadConfig();
 
             _harmony = new Harmony(PluginGuid);
@@ -47,8 +49,40 @@ namespace CUButt
         {
             WSMode = Config.Bind("General", "WholesomeMode", false, "Wholesome vibrations :3");
             GlobalMultiplier = Config.Bind("Vibration triggers", "GlobalMultiplier", 1f, "All vibrations are multiplied by this number.");
-            PainMultiplier = Config.Bind("Vibration triggers", "PainMultiplier", 1f, "Pain vibrations are multiplied by this number.");
+
+            Multipliers = new Dictionary<string, ConfigEntry<float>>();
+
+            foreach (var threadKey in ThreadManager.Threads.Keys)
+            {
+                var multiplierConfig = Config.Bind(
+                    "Vibration triggers",
+                    $"{char.ToUpper(threadKey[0]) + threadKey.Substring(1)}Multiplier",
+                    1f,
+                    $"{char.ToUpper(threadKey[0]) + threadKey.Substring(1)} vibrations are multiplied by this number.");
+
+                Multipliers.Add(threadKey, multiplierConfig);
+            }
+
             Plugin.Log.LogInfo("Config loaded.");
+        }
+
+        private void LoadThreads()
+        {
+            ThreadManager.AddThread("pain", 0);
+            ThreadManager.AddThread("wholesome", 99);
+            ThreadManager.AddThread("death", 100);
+            ThreadManager.AddThread("bleeding", 0);
+            ThreadManager.AddThread("radiation", 1);
+            ThreadManager.AddThread("ecg", 2, 1);
+            ThreadManager.AddThread("stamina", 0.142f);
+            ThreadManager.AddThread("painspike", 0);
+            ThreadManager.AddThread("earthquake", 0);
+            ThreadManager.AddThread("electricity", 0);
+            ThreadManager.AddThread("falling", 0.577f);
+            ThreadManager.AddThread("explosion", 0.343f);
+            ThreadManager.AddThread("soundcannon", 0);
+            ThreadManager.AddThread("soundcannon_blocked", 0.928f);
+
         }
 
         private void OnDestroy()
