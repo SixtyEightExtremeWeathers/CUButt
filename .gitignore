@@ -1,3 +1,4 @@
 FodyWeavers.xsd
-dist/*
-obj/*
+dist
+obj
+lib
