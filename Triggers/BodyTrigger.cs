@@ -26,6 +26,7 @@ namespace CUButt.Triggers
                 BleedingTrigger(__instance);
                 RadiationTrigger(__instance);
                 ECGTrigger(__instance);
+                StaminaTrigger(__instance);
             }
         }
 
@@ -179,6 +180,15 @@ namespace CUButt.Triggers
                 num = (Random.value > 0.5f) ? 1f : (-1f);
             }
             VibrationManager.SetSpeed(num * ModeMultiplier, 2);
+        }
+    
+        private static void StaminaTrigger(global::Body body)
+        {
+            float stamina = body.stamina;
+            if (stamina < 50f)
+            {
+                VibrationManager.SetSpeed((50f - stamina) / 100f * 0.25f);
+            }
         }
     }
 }
