@@ -3,6 +3,7 @@ using BepInEx.Logging;
 using HarmonyLib;
 using UnityEngine;
 using BepInEx.Configuration;
+using System;
 
 namespace CUButt
 {
@@ -11,7 +12,7 @@ namespace CUButt
     {
         public const string PluginGuid = "seew.casualtiesunknown.cubutt";
         public const string PluginName = "CUButt";
-        public const string PluginVersion = "1.1.2";
+        public const string PluginVersion = "1.1.3";
 
         internal static ManualLogSource Log;
 
@@ -27,10 +28,12 @@ namespace CUButt
             gameObject.hideFlags = HideFlags.HideAndDontSave;
 
             LoadConfig();
-            await VibrationManager.Initialize();
 
             _harmony = new Harmony(PluginGuid);
             _harmony.PatchAll(typeof(Plugin).Assembly);
+
+            ConsoleCommands.Register();
+            await VibrationManager.Initialize();
 
             Logger.LogInfo($"{PluginName} {PluginVersion} loaded.");
         }

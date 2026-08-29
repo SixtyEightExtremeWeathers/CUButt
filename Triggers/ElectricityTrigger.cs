@@ -8,9 +8,6 @@ namespace CUButt.Triggers
 {
     internal static class Electricity
     {
-        private static float _electricalUntil;
-        private static float _electricalStrength;
-
         internal static void TriggerElectricalShock()
         {
             VibrationManager.AddSpeedSequence(new List<float> { 0.3f, 0.9f, 0.4f, 0.5f, 0.95f, 0.1f, 0.8f });

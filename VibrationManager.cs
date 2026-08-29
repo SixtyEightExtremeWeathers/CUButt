@@ -16,25 +16,23 @@ namespace CUButt
 
     public static class VibrationManager
     {
-        internal static List<VibrationPoint> queue = Enumerable.Repeat(new VibrationPoint { speed = 0, priority = 0 }, 600).ToList();
+        internal static List<VibrationPoint> queue = Enumerable.Repeat(new VibrationPoint { speed = 0, priority = 0 }, 6000).ToList();
         private static ButtplugClient _client;
-        public static bool Initialized = false;
-        private static float InitAttemptTimer = 0f;
+        public static bool Initialized => _client != null && _client.Connected;
         private static float UpdateTimer = 0f;
+        private static float AlertTimer = 0f;
 
         internal async static Task Tick()
         {
-            InitAttemptTimer += Time.unscaledDeltaTime;
             UpdateTimer += Time.unscaledDeltaTime;
-
-            if (!Initialized && InitAttemptTimer > 5f)
+            AlertTimer += Time.unscaledDeltaTime;
+            if (!Initialized && AlertTimer > 7f)
             {
-                InitAttemptTimer = 0f;
-                await Initialize();
+                PlayerCamera.main.DoAlert("Intiface isn't connected. Start it and write \"intiface\" to console");
+                AlertTimer = 0f;
                 return;
             }
-
-            if (!Initialized || UpdateTimer < 0.1f || queue.Count == 0)return;
+            else if (UpdateTimer < 0.1f || !Initialized)return;
 
             await SendSpeed(queue[0].speed);
             queue.RemoveAt(0);
@@ -92,10 +90,10 @@ namespace CUButt
             AddPointSequence(points);
         }
 
-        public static async Task Initialize()
+        public static async Task<string> Initialize()
         {
             if (Initialized)
-                return;
+                return "Intiface already connected.";
 
             _client = new ButtplugClient("CUButt");
 
@@ -114,14 +112,14 @@ namespace CUButt
                     .Count(device =>
                         device.AllowedMessages.ContainsKey(DeviceMessages.VibrateCmd));
 
-
-                Initialized = true;
+                return "CUButt successfully connected to Intiface.";
             }
             catch (Exception ex)
             {
                 Plugin.Log.LogError(
                     $"Failed to connect to Intiface. Error: {ex.Message}"
                 );
+                return "Failed to connect to Intiface.";
             }
         }
 
