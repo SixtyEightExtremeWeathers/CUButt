@@ -29,7 +29,6 @@ namespace CUButt
             gameObject.hideFlags = HideFlags.HideAndDontSave;
 
             LoadThreads();
-            LoadConfig();
 
             _harmony = new Harmony(PluginGuid);
             _harmony.PatchAll(typeof(Plugin).Assembly);
@@ -38,6 +37,11 @@ namespace CUButt
             await VibrationManager.Initialize();
 
             Logger.LogInfo($"{PluginName} {PluginVersion} loaded.");
+        }
+
+        private void Start()
+        {
+            LoadConfig();
         }
 
         private async void Update()
@@ -53,7 +57,7 @@ namespace CUButt
             Multipliers = new Dictionary<string, ConfigEntry<float>>();
 
             foreach (var threadKey in ThreadManager.Threads.Keys)
-            {
+            {   
                 var multiplierConfig = Config.Bind(
                     "Vibration triggers",
                     $"{char.ToUpper(threadKey[0]) + threadKey.Substring(1)}Multiplier",
@@ -73,7 +77,7 @@ namespace CUButt
             ThreadManager.AddThread("death", 100);
             ThreadManager.AddThread("bleeding", 0);
             ThreadManager.AddThread("radiation", 1);
-            ThreadManager.AddThread("ecg", 2, 1);
+            ThreadManager.AddThread("ecg", 2);
             ThreadManager.AddThread("stamina", 0.142f);
             ThreadManager.AddThread("painspike", 0);
             ThreadManager.AddThread("earthquake", 0);
@@ -88,6 +92,12 @@ namespace CUButt
         private void OnDestroy()
         {
             _harmony?.UnpatchSelf();
+            CUButtSettingsWindow.Cleanup();
+        }
+
+        private void OnGUI()
+        {
+            CUButtSettingsWindow.Draw();
         }
     }
 }

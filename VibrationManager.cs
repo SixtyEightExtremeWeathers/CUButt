@@ -14,19 +14,64 @@ namespace CUButt
         private static float UpdateTimer = 0f;
         private static float AlertTimer = 0f;
 
+        private const int HistoryWindowSeconds = 5;
+        private const int HistorySamplesPerSecond = 10;
+        private static readonly Queue<float> VibrationHistory = new Queue<float>();
+        private static readonly Queue<Dictionary<string, float>> ThreadVibrationHistory = new Queue<Dictionary<string, float>>();
+
+        public static IReadOnlyList<float> GetVibrationHistory()
+        {
+            return VibrationHistory.ToArray();
+        }
+
+        public static IReadOnlyList<Dictionary<string, float>> GetThreadVibrationHistory()
+        {
+            return ThreadVibrationHistory.ToArray();
+        }
+
+        internal static void RecordVibrationSample(float speed)
+        {
+            speed = Mathf.Clamp01(speed);
+            VibrationHistory.Enqueue(speed);
+
+            int maxSamples = HistoryWindowSeconds * HistorySamplesPerSecond;
+            while (VibrationHistory.Count > maxSamples)
+            {
+                VibrationHistory.Dequeue();
+            }
+        }
+
+        internal static void RecordThreadVibrationSample()
+        {
+            var snapshot = ThreadManager.GetThreadVibrationSnapshot();
+            ThreadVibrationHistory.Enqueue(snapshot);
+
+            int maxSamples = HistoryWindowSeconds * HistorySamplesPerSecond;
+            while (ThreadVibrationHistory.Count > maxSamples)
+            {
+                ThreadVibrationHistory.Dequeue();
+            }
+        }
+
         internal async static Task Tick()
         {
             UpdateTimer += Time.unscaledDeltaTime;
             AlertTimer += Time.unscaledDeltaTime;
             if (!Initialized && AlertTimer > 7f)
             {
-                PlayerCamera.main.DoAlert("Intiface isn't connected. Start it and write \"intiface\" to console");
+                if (PlayerCamera.main != null)
+                {
+                    PlayerCamera.main.DoAlert("Intiface isn't connected. Start it and write \"intiface\" to console");
+                }
                 AlertTimer = 0f;
                 return;
             }
             else if (UpdateTimer < 0.1f || !Initialized)return;
 
-            await SendSpeed(ThreadManager.GetSpeed());
+            float speed = ThreadManager.GetSpeed();
+            RecordVibrationSample(speed);
+            RecordThreadVibrationSample();
+            await SendSpeed(speed);
             ThreadManager.QueueUpdate();
             UpdateTimer = 0f;
         }

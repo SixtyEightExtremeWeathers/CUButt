@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using UnityEngine;
 
 namespace CUButt
 {
@@ -10,23 +11,17 @@ namespace CUButt
         public float Priority;
         public List<float> Queue;
         public float Multiplier => GetMultiplier();
-        private float _multiplier;
 
-        public VibrationThread(string name, float priority, float multiplier)
+        public VibrationThread(string name, float priority)
         {
             Name = name;
             Priority = priority;
             Queue = Enumerable.Repeat(-1f, 6000).ToList();
-            _multiplier = multiplier;
         }
 
         public float GetMultiplier()
         {
-            if (_multiplier == -1)
-            {
-                return Plugin.Multipliers[Name].Value;
-            }
-            else{return _multiplier;}
+            return Plugin.Multipliers[Name].Value;
         }
     }
 
@@ -38,10 +33,26 @@ namespace CUButt
         static public List<VibrationThread> ThreadsList => Threads.Values.ToList();
 
 
-        static public void AddThread(string name, float priority = 0, float multiplier = -1)
+        static public void AddThread(string name, float priority = 0f)
         {
             if (Threads.ContainsKey(name))return;
-            Threads.Add(name, new VibrationThread(name, priority, multiplier));
+            Threads.Add(name, new VibrationThread(name, priority));
+        }
+
+        static public Dictionary<string, float> GetThreadVibrationSnapshot()
+        {
+            var snapshot = new Dictionary<string, float>();
+
+            foreach (var thread in ThreadsList)
+            {
+                float value = thread.Queue[0];
+                if (value >= 0f)
+                {
+                    snapshot[thread.Name] = Mathf.Clamp01(value);
+                }
+            }
+
+            return snapshot;
         }
 
         static public float GetSpeed()

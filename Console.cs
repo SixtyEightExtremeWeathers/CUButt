@@ -22,11 +22,10 @@ namespace CUButt
         {
             RegisterCommand(
                 "intiface",
-                "Reconnect to Intiface Central.",
-                async args =>
+                "Open CUButt settings window.",
+                args =>
                 {
-                    string ConnectAnswer = await VibrationManager.Initialize();
-                    ConsoleLog(ConsoleScript.instance, ConnectAnswer);
+                    CUButtSettingsWindow.Open();
                 },
                 null,
                 Args()
@@ -149,7 +148,7 @@ namespace CUButt
             {
                 if (__instance == null || ConsoleScript.Commands == null)
                 {
-                    return false;
+                    return true;
                 }
 
                 if (ConsoleScript.Commands.Count == 0)
@@ -160,7 +159,7 @@ namespace CUButt
                 Command spawnCommand = ConsoleScript.Commands.FirstOrDefault(command => SameCommandName(command.name, "spawn"));
                 if (spawnCommand == null)
                 {
-                    return false;
+                    return true;
                 }
 
                 if (spawnCommand.argAutofill == null)
@@ -168,7 +167,7 @@ namespace CUButt
                     spawnCommand.argAutofill = new Dictionary<int, List<string>>();
                 }
 
-                return false;
+                return true;
             }
         }
     }
